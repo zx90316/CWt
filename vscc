@@ -1,0 +1,1334 @@
+'定義主要對象。
+Dim IE1,nomberAll,nomber,btn,btn2,a,b,excel,Url1,Url2,Url3,Url4,Url5,Url6,Url7,Url8,Urlex1,Urlex2,Urlex3,high,lenth,back,max,fat,sol1,sol12,TotalWt,FrontWt,BackWt,NetWt,GoodsWt,TotalWt1000,TotalWtSol,Big,Plse,PlseAll,Tir,Con,carnom,engnom,typname,bb,aa,Typee,BigT,mgCopy
+
+'開分頁相關。
+const navOpenInNewTab = &h0800
+
+'----------更改此處----------------------------------------------
+SheetName = "韋珽"
+Urlex2="\\192.168.80.46\vscc\國產車審驗部\內部文件\01.審驗作業資料夾\核定重量驗算-志全\核定重量驗算紀錄-韋珽\1100521~核定重量驗算紀錄-韋珽.xlsx"
+'----------更改此處----------------------------------------------
+
+'輸入成變數"nomber"。
+Message = "請由IE登入三代系統後，再輸入案號:" & vbCrLf & vbCrLf & vbCrLf & vbCrLf & vbCrLf & vbCrLf & vbCrLf & "此程式由CWT設計。"
+Title = "三代系統輔助審驗系統Ver9.6"&"                 "&"by CWT"
+nomberAll=InputBox(Message, Title)
+nomber = Left(nomberAll,9)
+
+If (nomberAll<>"") Then
+
+
+'設置進程的URL。----------------------------------------------------------------------------------------------------------------------
+Url1="http://3gtas.vscc.org.tw/NLQExtendCarVertify/FirstVerify?CaseID="&nomber                        '初審
+Url2="http://3gtas.vscc.org.tw/NLQCaseFirstVerify/CertificationReport_ViewPDF?CaseID="&nomber         '合格證預覽
+Url3="http://3gtas.vscc.org.tw/CarPhoto/CarTypePhoto_EC_ViewPDF?CaseID="&nomber                       '完成車照片
+Url4="http://3gtas.vscc.org.tw/NMQVerify/CarBodyEnginePosition?caseID="&nomber                        '引擎號碼位置
+Url5="http://3gtas.vscc.org.tw/Business/FeeDetail?tmpCaseID="&nomber&"&tmpType=Q"                     '費用確認
+Url7="http://3gtas.vscc.org.tw/CarStockVerify/CheckCarStockStatus?carKind=cTotalWtssis&c="&nomber     '底盤車庫存比對
+Url8="http://3gtas.vscc.org.tw/ServiceQuery/VssFindService"                                           '監理站資訊系統
+
+Urlex2="\\192.168.80.46\vscc\國產車審驗部\內部文件\01.審驗作業資料夾\核定重量驗算-志全\核定重量驗算紀錄-韋珽\1100521~核定重量驗算紀錄-韋珽.xlsx"
+Urlex3="V:\國產車審驗部\內部文件\01.審驗作業資料夾\貨車底盤資料對應座位數-20200710-博賢.xlsx"
+'--------------------------------------------------------------------------------------------------------------------------------------
+
+'-----------------------------------------------------------------物件設定--------------------------------------------------------------------
+Set excel = CreateObject("Excel.Application")            '九宮格&座位數
+Set IE1 = CreateObject("InternetExplorer.Application")   '主要初審頁面
+Set IE3 = CreateObject("InternetExplorer.Application")   '抓取頁面
+Set IE4 = CreateObject("InternetExplorer.Application")   '控制頁面
+Set IE5 = CreateObject("InternetExplorer.Application")   '輔助核對 大樑變更&完成車照片
+Set Shell = CreateObject ("Wscript.Shell")               '彈出視窗 關閉確認
+
+Dim IE4, objDoc, objButtons
+Set IE4 = CreateObject("InternetExplorer.Application")
+  IE4.ToolBar   = False
+  IE4.StatusBar = True
+  IE4.Width     = 900
+  IE4.Height    = 520
+IE4.Navigate "about:blank"
+' 等待 IE 加載完畢
+Do While IE4.Busy
+    WScript.Sleep 100
+Loop
+
+' 創建一個 HTML 文檔對象
+Set objDoc = IE4.Document
+
+' 創建左區域 DIV 元素，並將其添加到 HTML 頁面
+Set objLeftDiv = objDoc.createElement("div")
+objLeftDiv.style.cssText = "position:absolute; top:0; left:0; width:80%; height:100%; padding:1px; background-color:#fff;font-family:times new roman; font-size: 16px;"
+objDoc.body.appendChild objLeftDiv
+
+' 創建右區域 DIV 元素，並將其添加到 HTML 頁面
+Set objRightDiv = objDoc.createElement("div")
+objRightDiv.style.cssText = "position:absolute; top:0; right:0; width:20%; height:100%; padding:1px; background-color:#eee;"
+objDoc.body.appendChild objRightDiv
+
+' 創建 MSGBOX DIV 元素，並將其添加到左區域 DIV 元素中
+Set objMsgBox = objDoc.createElement("div")
+objMsgBox.innerHTML = html
+objLeftDiv.appendChild objMsgBox
+
+
+IE4.Visible = True
+
+
+
+
+Function NiNht()
+' 创建Excel对象
+Set objExcel = CreateObject("Excel.Application")
+' 打开Excel文件
+Set objWorkbook = objExcel.Workbooks.Open(Urlex2)
+' 选择要搜索的工作表
+Set objWorksheet = objWorkbook.Sheets(SheetName)
+objExcel.Visible = True
+' 搜索目标
+Set objSearchRange = objWorksheet.Range("D:D") ' 将搜索范围设为A1到A100单元格
+strTarget = Right(BtNom,9)
+Set objSearchResult = objSearchRange.Find(strTarget)
+' 如果找到目标，则复制目标及上下两行到最后一行
+If Not objSearchResult Is Nothing Then
+    ' 获取目标所在行的行号
+    intRow = objSearchResult.Row
+    ' 获取包括目标上下两行的区域
+    Set objCopyRange = objWorksheet.Range("A" & intRow - 2 & ":O" & intRow + 5)
+    ' 获取最后一行的行号
+    intLastRow = objWorksheet.Cells(objWorksheet.Rows.Count, "F").End(-4162).Row ' -4162代表xlUp常量
+    ' 将目标及上下两行复制到最后一行
+    objCopyRange.EntireRow.Copy objWorksheet.Cells(intLastRow + 2, "A")
+    objWorksheet.Cells(intLastRow + 4, "A").Value = nomber  ' 将右方单元格的值设置为123
+    objWorksheet.Cells(intLastRow + 4, "B").Value = FaName  ' 将右下方单元格的值设置为456
+ELSE
+MSGBOX "NOT FOUND"
+Set objSearchResult = objSearchRange.Find("A110RDATW")
+' 获取目标所在行的行号
+    intRow = objSearchResult.Row
+    ' 获取包括目标上下两行的区域
+    Set objCopyRange = objWorksheet.Range("A" & intRow - 2 & ":O" & intRow + 5)
+    ' 获取最后一行的行号
+    intLastRow = objWorksheet.Cells(objWorksheet.Rows.Count, "F").End(-4162).Row ' -4162代表xlUp常量
+    ' 将目标及上下两行复制到最后一行
+    objCopyRange.EntireRow.Copy objWorksheet.Cells(intLastRow + 2, "A")
+
+    objWorksheet.Cells(intLastRow + 4, "A").Value = nomber  ' 将右方单元格的值设置为123
+    objWorksheet.Cells(intLastRow + 4, "B").Value = FaName  ' 将右下方单元格的值设置为456
+    objWorksheet.Cells(intLastRow + 4, "D").Value = Right(BtNom,9)  ' 将右下方单元格的值设置为456
+End If
+objExcel.Visible = True
+End Function
+
+'-----------------------------------------------------------------物件設定---------------------------------------------------------------------
+
+'-----------------------------------------------------------------開啟初審---------------------------------------------------------------------
+IE1.Navigate(Url1) 
+IE1.Visible = True '確保將 IE 的窗口設置為可見。
+Do
+Wscript.Sleep 200
+Loop Until IE1.readyState = 4
+Wscript.Sleep 500
+
+objLeftDiv.InnerHTML ="<pre>" & "1/10" & "</pre>"
+'-----------------------------------------------------------------開啟初審---------------------------------------------------------------------
+
+'-----------------------------------------------------------------長度尺度--------------------------------------------------------------------- 
+objER = IE1.Document.QuerySelector("a[href*='../ApplicantManagementSearchUser/FactoryInfo?cardID=']").href
+ErUrl = "http://3gtas.vscc.org.tw/ApplicantManagementSearchUser/BasicAdvData?cardID=" & right(objER,Len(objER)-74)
+high =IE1.Document.getElementById("m_mgch_height").Value     '高度
+lenth =IE1.Document.getElementById("m_mgch_length").Value    '長度
+fat =IE1.Document.getElementById("m_mgch_width").Value       '寬度
+back =IE1.Document.getElementById("m_mgch_bsusp").Value      '後懸
+base =IE1.Document.getElementById("m_mgch_wheelbase").Value  '軸距
+max =IE1.Document.getElementById("m_mgch_maxwb").Value       '最遠軸距
+FW =IE1.Document.getElementById("m_mgch_fwb").Value         '前輪輪距
+BW =IE1.Document.getElementById("m_mgch_bwb").Value         '後輪輪距
+FaName =IE1.Document.getElementById("m_BrandC").Value    '申請者名稱
+Many = IE1.Document.QuerySelector("a[href*='../NMQVerify/CertificationReport_ViewPDF?CaseID=']").InnerText   '多量安審字號
+Btf = IE1.Document.getElementById("m_ChLabel").Value             '底盤車廠牌
+Btypname = IE1.Document.getElementById("m_BaseType").Value     '底盤車型式
+typname = IE1.Document.getElementById("m_CarType").Value       '車輛型式
+AxleNo =IE1.Document.getElementById("m_AxleType").Value '軸組型
+Select case AxleNo
+   Case "11" 
+     Axle="前單軸後單軸"
+   Case "12"
+     Axle="前單軸後雙軸"
+End Select
+Set BodyAll =IE1.Document.QuerySelectorAll("#DivCarBasic table tbody tr td")
+CarBody = BodyAll.item(20).innerText
+Old = IE1.Document.QuerySelector("a[href*='IUCHistoricalofCases/IUCHistoricalofCasesDetail?CaseID=']").InnerText  '多量案號
+Url9= "http://3gtas.vscc.org.tw/NLQCaseFirstVerify/ConfirmConformForm_Sample?CaseID=" & Old & "&OriPage=HIS"        '多量符合性宣告表網址
+Sit =IE1.Document.getElementById("m_SeatNos").Value '座位數
+FtireN =IE1.Document.getElementById("m_mgch_faxtire").Value '前輪數
+Ftire =IE1.Document.getElementById("m_mgch_faxtireType").Value '前輪胎規格
+BtireN =IE1.Document.getElementById("m_mgch_baxtire").Value '後輪數
+Btire =IE1.Document.getElementById("m_mgch_baxtireType").Value '後輪規格
+CarT =IE1.Document.getElementById("m_mgcs_name").Value          '車種類別
+TotalWt =IE1.Document.getElementById("m_Totwt").Value          '總重
+FrontWt =IE1.Document.getElementById("m_mgch_faxleewt").Value  '前空重
+BackWt =IE1.Document.getElementById("m_mgch_baxleewt").Value   '後空重
+CarGWt =IE1.Document.getElementById("m_mgch_dewt").Value   '車輛空重
+GdWt =IE1.Document.getElementById("m_mgch_loadwt").Value   '車輛載重
+msgAllTime = "本案案號：" & nomber &  FaName & " 本案共：" & CaseN & "臺" + vbcrlf
+Con =IE1.Document.getElementById("m_ConTotwt").Value               '連結總重  
+Tir =IE1.Document.getElementById("m_mgch_spareType").Value         '備胎規格
+Big =IE1.Document.getElementById("m_LogCng").Value          '大樑變更
+Plse =IE1.Document.getElementById("span_AddEquip").InnerText       '附加配備顯示
+PlseAll =IE1.Document.getElementById("m_AddEquip").Value           '附加配備代號
+Select Case right(PlseAll,1)
+   Case "1"
+     PlseAllT=",鷗翼機構"
+   Case "2"
+     PlseAllT=",聯結器"
+   Case Else
+     PlseAllT=""
+End Select
+If (right(PlseAll,3)="1,2" ) Then
+PlseAllT = ",鷗翼機構，聯結器"
+End If
+Select Case Big
+   Case "0" 
+     BigT="大樑截短"
+     mgBA=""
+   Case "1"
+     BigT="大樑加長"
+     mgBA="100%X-RAY檢查證明或WPS證明文件" + vbcrlf
+   Case "2"
+     BigT="形式變更"
+     mgBA="100%X-RAY檢查證明或WPS證明文件" + vbcrlf
+   Case Else 
+     BigT="---"
+End Select
+
+If (TotalWt>1000 ) And ( TotalWt<=3500)  Then   '空重大於10000 判斷單位為公斤，及除以1000以公斤計算
+msgtxt77= "N1小貨車[" & CarT & "]"  + vbcrlf
+Typee = "N1"
+Dayy="2024-12-31"
+Else If (TotalWt=5000 ) And ( lenth<600 ) Then
+msgtxt77= "N2小貨車[" & CarT & "]" +  vbcrlf
+Typee = "N2"
+Dayy="2024-12-31"
+Else If (TotalWt>3500 ) And ( lenth>600 ) Then
+msgtxt77= "N2大貨車[" & CarT & "]" +  vbcrlf
+Typee = "N2"
+Dayy="2024-12-31"
+Else If (TotalWt>12 ) And ( TotalWt<50 ) Then
+msgtxt77= "N3大貨車[" & CarT & "]" +   vbcrlf
+Typee = "N3"
+Dayy="2023-12-31"
+Else
+msgtxt77 = "N2大貨車[" & CarT & "]" +  vbcrlf
+Typee = "N2"
+Dayy="2024-12-31"
+End If
+End If
+End If
+End If
+
+
+If (TotalWt=5000 ) Then
+mg2 = "此車為5噸貨車，須勾選(依交通部108年11月21日)備註" + vbcrlf
+End If
+
+Function FifTonCheck()
+FifTonId = 13
+If (Typee = "N3") Then                                                                                                   '5頓備註
+mg2 = "此車為N3類，須注意基準項目110及111(符合性宣告表)" + vbcrlf
+Else If (TotalWt=5000 ) Then
+mg2 = "此車為5噸貨車，須勾選(依交通部108年11月21日)備註" + vbcrlf
+     If (IE1.Document.getElementById("m_ExtendCarNotes_List_3__Selected").checked = "True" ) Then
+      FifTonId=FifTonId+1
+      End If
+     Set B5CB = IE1.Document.getElementById("m_ExtendCarNotes_List_"& FifTonId &"__Selected")
+      If B5CB.checked = "False" Then
+       B5CB.Click
+      End If
+Else If (Typee = "N2") Then
+mg2 = "此車為N2類，須注意基準項目110及111，有裝設應符合(符合性宣告表)" + vbcrlf
+End If
+End If
+End If
+End Function
+
+sol1=lenth-back-max                                            '前懸核對
+sol12=max/2-back                                               '後懸確認 
+NetWt=FrontWt*1000+BackWt*1000        '空重=前空*1000+後空*1000 以公斤計算
+TotalWt1000=TotalWt*1000              '變數總重1000=總重*1000
+GoodsWt=TotalWt1000-NetWt             '載重=總重*1000-空重
+msg001= "全長" & lenth + vbcrlf
+msg002= "全寬" & fat + vbcrlf
+msg003= "全高" & high + vbcrlf
+msg004= "後懸" & back + vbcrlf
+msg005= "軸距" & base + vbcrlf
+msg006= "最遠軸距" & max + vbcrlf
+msg007= "前輪輪距" & FW + vbcrlf
+msg008= "後輪輪距" & BW + vbcrlf
+msgbbb = "---------------" + vbcrlf
+msg009 = "完成車前軸組空重：" & FrontWt + vbcrlf
+msg010 = "完成車後軸組空重：" & BackWt + vbcrlf
+msg011 = "底盤車型式：" & Btypname  + vbcrlf
+m512 =  "核對完稅證，大樑變更資料(5/12)" + vbcrlf
+m5121 = "宣告後懸：[" & back & "] 不可低於大樑變更後之後懸" + vbcrlf
+m5122 = "最遠軸距：" & max + vbcrlf
+m5123 = "前空重：" & FrontWt + vbcrlf
+m5124 = "後空重：" & BackWt + vbcrlf
+mgT = "輪胎規格核對並於初審輸入輪胎荷重，複製底盤車案號(10/12)" + vbcrlf
+mgFTire = BtFTire & "前輪數：[" & FtireN & "]|" & "前輪胎規格：[" &  Ftire & "]" + vbcrlf 
+mgBTire = BtBTire & "後輪數：[" & BtireN & "]|" & "後輪胎規格：[" &  Btire & "]" + vbcrlf
+
+
+
+Function BigChange()
+BigListId = 6
+If (BigT <> "---") Then
+MBC="TRUE"
+      If (CarT =  "大貨車") Then
+      BigListId=BigListId+1
+      End If
+      If (IE1.Document.getElementById("m_ExtendCarNotes_List_3__Selected").checked = "True" ) Then
+      BigListId=BigListId+1
+      End If
+      Set BCB = IE1.Document.getElementById("m_ExtendCarNotes_List_" & BigListId & "__Selected")
+      If BCB.checked = "False" Then                                                                '大樑變更備註
+       BCB.Click
+      Else 
+      End If
+Else
+MBC="FALSE"
+End If
+End Function
+
+'-------------------------------------------------------------------------------------------重量單位判斷
+If (GoodsWt>100000) Then   '空重大於10000 判斷單位為公斤，及除以1000以公斤計算
+NetWt=(NetWt/1000)         
+GoodsWt=(GoodsWt/1000)
+TotalWt1000=(TotalWt1000/1000)
+End If
+'--------------------------------------------------------------------------------------------重量單位判斷
+
+'-----------------------------------------------------------------------------------計算空重+載重=總重
+TotalWtSol=NetWt+GoodsWt '計算空重+載重=總重
+'--------------------------------------------------------------------------------------計算空重+載重=總重
+Set objExcel = CreateObject("Excel.Application")
+Set objWorkbook = objExcel.Workbooks.Open(Urlex3)
+Set objWorksheet = objWorkbook.Worksheets("查詢")
+strTarget= Btypname 
+Set objRange = objWorksheet.Cells.Find(strTarget)' 在工作表中搜索目標值
+If Not objRange Is Nothing Then' 如果找到目標值，則顯示右邊儲存格的數值
+    intRow = objRange.Row' 目標值所在的行和列
+    intColumn = objRange.Column
+    strValue1 = objWorksheet.Cells(intRow, intColumn + 2).Value ' 右邊儲存格的數值
+    If strValue1 = "" Then
+    strValue1 = objWorksheet.Cells(intRow, intColumn + 1).Value ' 右邊儲存格的數值
+    End If
+    msgSitt = "底盤車型式：" & Btypname & "座位數：[" & strValue1 & "]"    ' 顯示右邊儲存格的數值
+Else
+    msgSitt = "底盤車型式：" & Btypname & "未搜尋到該底盤車型式。"  ' 如果沒有找到目標值，則顯示一條消息
+End If
+objWorkbook.Close' 關閉 Excel 文件
+Set objExcel = Nothing' 釋放對象
+
+objLeftDiv.InnerHTML ="<pre>" & "2/10" & "</pre>"
+IE3.Navigate(ErUrl)
+'IE3.Visible = True
+Do While IE3.ReadyState <> 4
+  WScript.Sleep 1000
+Loop
+
+ComURL = "https://www.twincn.com/item.aspx?no=" & IE3.Document.QuerySelector("#m_StructList_0__m_CSInvUNO").value
+
+Html = "<table>" & _
+IE3.Document.QuerySelector("table.table_list111 tbody").innerHtml & _ 
+ "<table>" & _
+  IE3.Document.QuerySelectorAll("table.table_list111 tbody").item(1).innerHtml
+objLeftDiv.InnerHTML ="<pre>" & "3/10" & "</pre>"
+IE3.Navigate(ComURL) 
+Do While IE3.ReadyState <> 4
+  WScript.Sleep 1000
+Loop
+Html = Html &_ 
+"<p>" &_
+ IE3.Document.QuerySelector("form header div div div div p").innerHtml
+
+
+IE3.Navigate(Url9) 
+mg06 = "-----------------" + vbcrlf
+
+objLeftDiv.InnerHTML ="<pre>" & "4/10" & "</pre>"
+Do While IE3.ReadyState <> 4
+  WScript.Sleep 1000
+Loop
+'取得包含特定文字的元素
+Dim searchString
+searchString = "710.行車視野輔助系統 "
+Dim elements
+
+Set elements = IE3.Document.QuerySelectorAll("td")
+
+For BBbodyCs=0 to elements.length
+On Error Resume Next
+BBLuLu = elements.item( BBbodyCs).innertext
+
+On Error GoTo 0
+
+Select case BBLuLu
+Case "710.行車視野輔助系統 "
+    BB710 = "710.行車視野輔助系統 " + vbcrlf
+    BB710 = BB710 + "   "  & "<a href = 'http://3gtas.vscc.org.tw/Common/GetFile_display?DocID=" & Mid(elements.item( BBbodyCs+3).innerHtml,98,7) & "' target='_blank'> " & elements.item( BBbodyCs+2).innertext & "</a>"  + vbcrlf
+    SS=0
+For Cs = 1 To elements.item( BBbodyCs).rowspan-1
+   SS=3+3*Cs
+   BB710 = BB710 + "   " & "<a href = 'http://3gtas.vscc.org.tw/Common/GetFile_display?DocID=" & Mid(elements.item(BBbodyCs+SS+1).innerHtml,98,7) & "' target='_blank'> " & elements.item( BBbodyCs+SS).innertext & "</a>" + vbcrlf
+Next 
+
+
+Case "110.轉彎及倒車警報裝置安裝規定 "
+    BB110 = "110.轉彎及倒車警報裝置安裝規定 " + vbcrlf
+    BB110 = BB110 + "   " &elements.item( BBbodyCs+2).innertext + vbcrlf
+If elements.item( BBbodyCs+2).innertext = "--- " Then
+    BB110 = "110.轉彎及倒車警報裝置安裝規定 " + vbcrlf
+    BB110 = BB110 + "   " &elements.item( BBbodyCs+1).innertext + vbcrlf
+End If
+
+    SS=0
+For Cs = 1 To elements.item( BBbodyCs).rowspan-1
+   SS=3+3*Cs
+   BB110 = BB110 + "   " &  elements.item( BBbodyCs+SS).innertext + vbcrlf
+Next 
+Case "111.轉彎及倒車警報裝置安裝規定 "
+    BB111 = "111.轉彎及倒車警報裝置安裝規定 " + vbcrlf
+    BB111 = BB111 + "   " &elements.item( BBbodyCs+2).innertext + vbcrlf
+If elements.item( BBbodyCs+2).innertext = "--- " Then
+    BB111 = "111.轉彎及倒車警報裝置安裝規定 " + vbcrlf
+    BB111 = BB111 + "   " &elements.item( BBbodyCs+1).innertext + vbcrlf
+End If
+
+    SS=0
+For Cs = 1 To elements.item( BBbodyCs).rowspan-1
+   SS=3+3*Cs
+   BB111 = BB111 +  "   " &elements.item( BBbodyCs+SS).innertext
+Next 
+ 
+Case "201.反光識別材料 "
+     BB201 = "201.反光識別材料 " + vbcrlf
+    BB201 = BB201 +  "   " &elements.item( BBbodyCs+2).innertext + vbcrlf
+    SS=0
+For Cs = 1 To elements.item( BBbodyCs).rowspan-1
+   SS=3+3*Cs
+   BB201 = BB201 +  "   " &elements.item( BBbodyCs+SS).innertext + vbcrlf
+Next 
+Case "202.反光識別材料 "
+     BB202 = "202.反光識別材料 " + vbcrlf
+    BB202 = BB202 +  "   " &elements.item( BBbodyCs+2).innertext + vbcrlf
+    SS=0
+For Cs = 1 To elements.item( BBbodyCs).rowspan-1
+   SS=3+3*Cs
+   BB202 = BB202 +  "   " &elements.item( BBbodyCs+SS).innertext + vbcrlf
+Next 
+
+Case "390.輪廓邊界標識燈 " 
+BB390 = "390.輪廓邊界標識燈 " + vbcrlf
+    BB390 = BB390 +  "   " &elements.item( BBbodyCs+2).innertext + vbcrlf
+ 
+    SS=0
+For Cs = 1 To elements.item( BBbodyCs).rowspan-1
+   SS=3+3*Cs
+   BB390 = BB390 + "   " &elements.item( BBbodyCs+SS).innertext + vbcrlf
+
+Next   
+
+Case "401.側方標識燈 "
+BB401 = "401.側方標識燈  " + vbcrlf
+    BB401 = BB401 +  "   " &elements.item( BBbodyCs+2).innertext + vbcrlf
+    SS=0
+For Cs = 1 To elements.item( BBbodyCs).rowspan-1
+   SS=3+3*Cs
+   BB401 = BB401 + "   " &elements.item( BBbodyCs+SS).innertext + vbcrlf
+Next 
+
+Case "080.汽車傾斜穩定度規定 "
+BB080 = "080.汽車傾斜穩定度規定 " + vbcrlf
+    BB080 = BB080 +  "   " &elements.item( BBbodyCs+2).innertext + vbcrlf
+If elements.item( BBbodyCs+2).innertext = "--- " Then
+BB080 = "080.汽車傾斜穩定度規定 " + vbcrlf
+    BB080 = BB080 +  "   " &elements.item( BBbodyCs+1).innertext + vbcrlf
+End If
+
+    SS=0
+For Cs = 1 To elements.item( BBbodyCs).rowspan-1
+   SS=3+3*Cs
+   BB080 = BB080 + "   " &elements.item( BBbodyCs+SS).innertext + vbcrlf
+Next 
+
+
+Case "610.機械式聯結裝置安裝規定 "
+BB610 = "610.機械式聯結裝置安裝規定 " + vbcrlf
+    BB610 = BB610 +  "   " &elements.item( BBbodyCs+2).innertext + vbcrlf
+    SS=0
+If elements.item( BBbodyCs+2).innertext = "--- " Then
+BB610 = "610.機械式聯結裝置安裝規定 " + vbcrlf
+    BB610 = BB610 +  "   " &elements.item( BBbodyCs+1).innertext + vbcrlf
+End If
+For Cs = 1 To elements.item( BBbodyCs).rowspan-1
+   SS=3+3*Cs
+   BB0610 = BB610 + "   " &elements.item( BBbodyCs+SS).innertext + vbcrlf
+Next 
+
+Case "070.左右兩側防止捲入裝置與後方安全防護裝置(或保險槓) "
+BB070 = "070.左右兩側防止捲入裝置與後方安全防護裝置(或保險槓)" + vbcrlf
+    BB070 = BB070 +  "   " &elements.item( BBbodyCs+2).innertext + vbcrlf
+    SS=0
+If elements.item( BBbodyCs+2).innertext = "--- " Then
+BB070 = "070.左右兩側防止捲入裝置與後方安全防護裝置(或保險槓)" + vbcrlf
+    BB070 = BB070 +  "   " &elements.item( BBbodyCs+1).innertext + vbcrlf
+End If
+
+For Cs = 1 To elements.item( BBbodyCs).rowspan-1
+   SS=3+3*Cs
+   BB070 = BB070 + "   " &elements.item( BBbodyCs+SS).innertext + vbcrlf
+Next 
+
+Case "031.車輛燈光與標誌檢驗規定 "
+BB031 = "031.車輛燈光與標誌檢驗規定" + vbcrlf
+    BB031 = BB031 +  "   " &elements.item( BBbodyCs+2).innertext + vbcrlf
+    SS=0
+If elements.item( BBbodyCs+2).innertext = "--- " Then
+BB031 = "031.車輛燈光與標誌檢驗規定" + vbcrlf
+    BB031 = BB031 +  "   " &elements.item( BBbodyCs+1).innertext + vbcrlf
+End If
+
+For Cs = 1 To elements.item( BBbodyCs).rowspan-1
+   SS=3+3*Cs
+   BB031 = BB031 + "   " &elements.item( BBbodyCs+SS).innertext + vbcrlf
+Next 
+
+Case "032.車輛燈光與標誌檢驗規定 "
+BB032 = "032.車輛燈光與標誌檢驗規定" + vbcrlf
+    BB032 = BB032 +  "   " &elements.item( BBbodyCs+2).innertext + vbcrlf
+If elements.item( BBbodyCs+2).innertext = "--- " Then
+BB032 = "032.車輛燈光與標誌檢驗規定" + vbcrlf
+    BB032 = BB032 +  "   " &elements.item( BBbodyCs+1).innertext + vbcrlf
+End If
+
+    SS=0
+For Cs = 1 To elements.item( BBbodyCs).rowspan-1
+   SS=3+3*Cs
+   BB032 = BB032 + "   " &elements.item( BBbodyCs+SS).innertext + vbcrlf
+Next 
+
+Case "033.車輛燈光與標誌檢驗規定 "
+BB033 = "033.車輛燈光與標誌檢驗規定" + vbcrlf
+    BB033 = BB033 +  "   " &elements.item( BBbodyCs+2).innertext + vbcrlf
+If elements.item( BBbodyCs+2).innertext = "--- " Then
+BB033 = "033.車輛燈光與標誌檢驗規定" + vbcrlf
+    BB033 = BB033 +  "   " &elements.item( BBbodyCs+1).innertext + vbcrlf
+End If
+
+    SS=0
+For Cs = 1 To elements.item( BBbodyCs).rowspan-1
+   SS=3+3*Cs
+   BB033 = BB033 + "   " &elements.item( BBbodyCs+SS).innertext + vbcrlf
+Next 
+
+Case "034.車輛燈光與標誌檢驗規定 "
+BB034 = "034.車輛燈光與標誌檢驗規定" + vbcrlf
+    BB034 = BB034 +  "   " &elements.item( BBbodyCs+2).innertext + vbcrlf
+If elements.item( BBbodyCs+2).innertext = "--- " Then
+BB034 = "034.車輛燈光與標誌檢驗規定" + vbcrlf
+    BB034 = BB034 +  "   " &elements.item( BBbodyCs+1).innertext + vbcrlf
+End If
+
+    SS=0
+For Cs = 1 To elements.item( BBbodyCs).rowspan-1
+   SS=3+3*Cs
+   BB034 = BB034 + "   " &elements.item( BBbodyCs+SS).innertext + vbcrlf
+Next 
+
+End Select
+Next
+
+
+ IE3.Navigate "http://3gtas.vscc.org.tw/ServiceQuery/VssFindService" '---------------------------------------庫存車查詢
+  IE3.ToolBar   = False
+  IE3.StatusBar = True
+  IE3.Width     = 800
+  IE3.Height    = 700
+objLeftDiv.InnerHTML ="<pre>" & "5/10" & "</pre>"
+Do
+Wscript.Sleep 200
+Loop Until IE3.readyState = 4
+Wscript.Sleep 500
+
+QQQ = ""
+                                         '--------------------------------------------------------------------------------------------------------庫存車查詢
+mg05 = "監理站資訊查詢：" + vbcrlf
+'-------------
+CaseN = IE1.Document.QuerySelectorAll("[class='CarListNo']").length    '臺數
+msgAllTime = "案號：" & nomber & " " & FaName & " 本案共：" & CaseN & "臺"  + vbcrlf
+
+For ii = 0 To CaseN-1
+Nom = ii + 1
+Id = "tr_m_CarList_" & ii
+Set aa=IE1.Document.getElementById(Id)             '號碼位置
+Set bb=aa.QuerySelectorAll("[style*='text-align: center;']")     '號碼位置
+engnom=bb.item(1).innertext                                    '引擎號碼
+carnom=bb.item(2).innertext                                      '車身號碼
+msg000 = msg000 & Nom & ". " &  "完  成  車  照  片  (車輛型式：" & typname & ") (引擎/車身號碼：" & engnom & "/" & carnom & ")" + vbcrlf
+msg013= msg013 & "車輛型式：" & typname & "(引擎/車身號碼：" & engnom  & carnom & ")" + vbcrlf
+
+IE3.Document.getElementById("textBoxCarBodyNO").Value=carnom
+IE3.Document.QuerySelector("[name='buttonQueryVSCCStorage']").Click
+
+do
+Wscript.Sleep 100
+Loop Until IE3.Document.getElementById("divQueryVSCCStorageResult").InnerText <> QQQ
+Wscript.Sleep 100
+
+QQQ = IE3.Document.getElementById("divQueryVSCCStorageResult").InnerText     '庫存車查詢回傳值
+mg00 = mg00 & QQQ + vbcrlf
+Next
+objLeftDiv.InnerHTML ="<pre>" & "6/10" & "</pre>"
+Set a=IE1.Document.QuerySelectorAll("a[href*='Common/GetFile?DocID=']")
+n= a.length
+
+Sub Download() '--------------------------------------------開啟所有檢附文件
+For i =0 To n-1
+Set b=a.item(i)
+b.click
+Wscript.Sleep 1000
+Next
+End Sub
+
+mg11 = "案件登陸審驗案件控管表(1/12)" + vbcrlf 
+mg07 = "底盤車型式：" & Btypname  + vbcrlf
+mg08 = "多量安審字號：" & Many  + vbcrlf
+mg09 = "車輛總重：" & TotalWt  + vbcrlf
+mg10 = "底盤車廠牌：" & Btf  + vbcrlf
+mg12 = "車身號碼：" & carnom  + vbcrlf
+mg14 = "開啟所有檢附檔案，共有 " & n & " 個檔案" + vbcrlf
+mg17 = "核對完稅證"
+
+If (TotalWt>1000 )   Then   '空重大於10000 判斷單位為公斤，及除以1000以公斤計算
+mg13 = TotalWt/1000
+Else
+mg13 = TotalWt
+End If
+mg15 = right(carnom,5)
+
+If Left(mg15,1) = "0" Then
+mg16 = "'" & mg15
+Else
+mg16 = mg15
+End If
+
+mgCopy = Many & ";" & Btypname & ";" & Btf & ";" & mg16 & ";" & mg13 & + vbcrlf    '快捷複製內容
+
+mg05 = "監理站資訊查詢：" + vbcrlf
+QQQ1=Right(QQQ,32)
+QQQ2=Left(QQQ1,9)
+
+Select Case QQQ2
+   Case "111.12.31" 
+ Dayy="2022-12-31"
+   Case "110.12.31"
+ Dayy="2021-12-31"
+   Case Else 
+End Select
+
+MgDay ="建議核定日期：" & Dayy +vbcrlf
+mg06 = "------------------------------" + vbcrlf
+mg0=mg05+mg00+mg06+msgtxt77
+
+IE3.Navigate("http://3gtas.vscc.org.tw/SOAutoChassis/CaseQuery_List")        '底盤查詢
+
+Do
+Wscript.Sleep 200
+Loop Until IE3.readyState = 4
+Wscript.Sleep 500
+objLeftDiv.InnerHTML ="<pre>" & "7/10" & "</pre>"
+IE3.Document.getElementById("Param_Base_ChassisTypeName").Value=Btypname      '輸入底盤型式
+
+Set CKB = IE3.Document.getElementById("Param_isNewest")
+If CKB.checked = "False" Then
+CKB.Click                                                                      '勾選最新報告
+End If
+
+IE3.Document.QuerySelector("[onclick='Search()']").Click                      '搜尋按鈕
+Wscript.Sleep 1000
+objLeftDiv.InnerHTML ="<pre>" & "8/10" & "</pre>"
+BtCa=-1
+BtNN= ""
+Cs = "0"
+'--------------------------------------------
+Function BtAllErr()
+BtCa=0
+BtNN= ""
+Cs = "0"
+
+On Error Resume Next
+
+Do
+Set BtAllType = IE3.Document.QuerySelectorAll("[href*='/SOAutoChassis/CaseQuery_Initialize?CaseID=']")
+BtCa=BtCa+1
+Wscript.Sleep 100
+BtNN = BtAllType.item(BtCa).innertext
+
+Cs = Cs +1 
+If Cs > 10 Then
+BtCa=-1
+Cs=0
+On Error goto 0
+End If
+
+Loop Until  BtNN = " " & Btypname
+Wscript.Sleep 200
+On Error goto 0
+End Function
+
+'-----------------------------------------
+Call BtAllErr()
+objLeftDiv.InnerHTML ="<pre>" & "9/10" & "</pre>"
+Set BtAllType = IE3.Document.QuerySelectorAll("[href*='/SOAutoChassis/CaseQuery_Initialize?CaseID=']")
+BtCa=BtCa-1
+BtNom = BtAllType.item(BtCa).InnerText
+BtNomType = IE3.Document.QuerySelector("[href*='&Base_ChassisTypeName=']").InnerText
+BtChangg = Btypname
+
+If BtChangg = "FECX1ELA(戴姆勒)" Then
+BtChangg = "FECX1ELA(%E6%88%B4%E5%A7%86%E5%8B%92)"
+End If
+
+UrlBt = "http://3gtas.vscc.org.tw/SOAutoChassis/CaseQuery_Initialize?CaseID=" & Right(BtNom,9) & "&Base_ChassisTypeName=" & BtChangg
+
+IE3.Navigate(UrlBt)
+
+Do
+Wscript.Sleep 100
+Loop Until IE3.readyState = 4
+Wscript.Sleep 200
+
+Set BtBody =IE3.Document.QuerySelectorAll("tbody tr td")                      '獲取底盤資訊
+Set BtBodyp =IE3.Document.QuerySelectorAll("a[href*='/SOAutoChassis/GetFile?DocID=']") 
+
+BtPictureUrl = BtBodyp.item(1).href
+
+Set BtBody1 =IE3.Document.QuerySelectorAll("div form center") 
+BtDay = Mid(BtBody1.item(0).innertext,279,15)
+
+BtLength = BtBody.item(28).innerText                                  '底盤長度              
+BtFat = BtBody.item(36).innerText                                '底盤寬度
+BtHigh = BtBody.item(44).innerText                                '底盤高度
+
+BtLengthKill = Len(BtLength)-4
+BtFatKill = Len(BtFat)-4
+BtHighKill = Len(BtHigh)-4
+
+
+
+BtFH = BtBody.item(66).innerText                                '底盤前空重
+BtBH = BtBody.item(76).innerText                                '底盤後空重
+BtFTH = BtBody.item(80).innerText                                '底盤前宣告重
+BtBTH = BtBody.item(84).innerText                                '底盤後宣告重
+BtFTire = BtBody.item(123).innerText + vbcrlf                               '底盤前輪規格
+BtBTire = BtBody.item(135).innerText + vbcrlf                               '底盤後輪規格
+BtFA = BtBody.item(18).innerText + vbcrlf                       '底盤車形式系列
+BtFmax =BtBody.item(32).innerText + vbcrlf                      '底盤車前懸
+BtBmax =BtBody.item(40).innerText + vbcrlf                      '底盤車後懸
+mgBmax = "底盤車後懸： " & BtBmax + vbcrlf 
+
+
+
+BtFmaxLen = Len(BtFmax)
+Kill=BtFmaxLen-6
+BtFmax1 = Left(BtFmax,kill)
+BtCCTireF=""
+BtCCTireB=""
+
+BtFTireCs=124
+
+do 
+BtFTireCs = BtFTireCs + 2
+Loop Until Mid(BtBody.item(BtFTireCs).innerText,2,2) <> "規格" And Mid(BtBody.item(BtFTireCs).innerText,2,2) <>"格：" 
+BtFTireCs = BtFTireCs - 2
+
+For iiii=124 to BtFTireCs
+If Mid(BtBody.item(iiii).innerText,5,Len(BtBody.item(iiii).innerText)-4) = Ftire&" " Then
+  If BtCCTireF = "" Then
+    BtCCTireF = BtCCTireF & Mid(BtBody.item(iiii+1).innerText,7,4)
+
+    Else If BtCCTireF>Mid(BtBody.item(iiii+1).innerText,7,4) Then
+   BtCCTireF=Mid(BtBody.item(iiii+1).innerText,7,4)
+    End If
+  End If
+End If
+next
+
+BtBTireCs = BtFTireCs+2
+
+do 
+BtBTireCs = BtBTireCs + 2
+Loop Until Mid(BtBody.item(BtBTireCs).innerText,2,2) <> "規格" And Mid(BtBody.item(BtBTireCs).innerText,2,2) <>"格：" 
+BtBTireCs = BtBTireCs - 2
+
+For iiii=BtFTireCs+3 to BtBTireCs
+If Mid(BtBody.item(iiii).innerText,5,Len(BtBody.item(iiii).innerText)-4) = Btire&" " Then
+  If BtCCTireB="" Then
+     BtCCTireB = BtCCTireB & Mid(BtBody.item(iiii+1).innerText,7,4)
+    Else If BtCCTireB>Mid(BtBody.item(iiii+1).innerText,7,4) Then
+     BtCCTireB=Mid(BtBody.item(iiii+1).innerText,7,4)
+    End If
+  End If
+End If
+next
+
+If right(BtCCTireF,1)="k" Then
+BtCCTireF = left(BtCCTireF,3)
+End If
+
+If right(BtCCTireB,1)="k" Then
+BtCCTireB = left(BtCCTireB,3)
+End If
+
+On Error Resume Next
+If TotalWt >1000 Then
+mgTieF = "前軸輪胎荷重：" & BtCCTireF*FtireN &" 公斤" & + vbcrlf 
+IE1.Document.getElementById("m_FaxleTirewt").Value=BtCCTireF*FtireN
+mgTieB = "後軸輪胎荷重：" & BtCCTireB*BtireN &" 公斤" & + vbcrlf 
+IE1.Document.getElementById("m_BaxleTirewt").Value=BtCCTireB*BtireN
+Else
+mgTieF = "前軸輪胎荷重：" & BtCCTireF*FtireN/1000 &" 公噸" & + vbcrlf 
+IE1.Document.getElementById("m_FaxleTirewt").Value=BtCCTireF*FtireN/1000
+mgTieB = "後軸輪胎荷重：" & BtCCTireB*BtireN/1000 &" 公噸" & + vbcrlf 
+IE1.Document.getElementById("m_BaxleTirewt").Value=BtCCTireB*BtireN/1000
+End If
+On Error GoTo 0
+
+msgg1 = "底盤前宣告重：" & BtFTH + vbcrlf  
+msgg2 = "底盤後宣告重：" & BtBTH + vbcrlf  
+mg4 = "勾選備註、核定有效日期，在存檔後按確定(2/12)"  + vbcrlf                    
+mg1 = "大樑變更：[" & BigT &"] " + vbcrlf
+mg22= "連結器確認：[ " & Con & "]" & + vbcrlf
+mg3 = "附加配備： [" & Plse  & PlseAllT &"]"  & + vbcrlf
+mgBtDay = "底盤有效期限：" & BtDay & + vbcrlf
+
+mg22= "連結器確認：[ " & Con & "]" & + vbcrlf
+mg3 = "附加配備： [" & Plse  & PlseAllT &"]"  & + vbcrlf
+Con =IE1.Document.getElementById("m_ConTotwt").Value               '連結總重  
+Plse =IE1.Document.getElementById("span_AddEquip").InnerText       '附加配備顯示
+PlseAll =IE1.Document.getElementById("m_AddEquip").Value           '附加配備代號
+
+Select Case right(PlseAll,1)
+   Case "1"
+     PlseAllT=",鷗翼機構"
+   Case "2"
+     PlseAllT=",聯結器"
+   Case Else
+     PlseAllT=""
+End Select
+If (right(PlseAll,3)="1,2" ) Then
+PlseAllT = ",鷗翼機構，聯結器"
+End If
+IE3.Document.QuerySelector("[onclick='CheckAndSubmit();']").Click                                        '----------------------底盤下一步
+
+mg11 = "庫存車比對"  + vbcrlf
+mg12 = "大樑變更：[" & BigT &"]" & "檢查費用(3/12)"
+
+msg0000= msg000+msgbbb+msg001+msgbbb+msg002+msgbbb+msg003+msgbbb+msg004+msgbbb+msg005+msgbbb+msg006+msgbbb+msg007+msgbbb+msg008     'msg0000(核對完成車照片)
+msg0001 =  msg013 +m5121 + msg006 + mgBmax + msg009  +msg010 + msgg1+ msgg2   + mgTieF + mgTieB + mg06 +BtFTire+ mgFTire + mg06 + BtBTire +mgBTire               'msg0001(核對完稅證
+
+do
+Wscript.Sleep 200
+Loop Until IE3.readyState = 4
+Wscript.Sleep 1000
+objLeftDiv.InnerHTML ="<pre>" & "10/10" & "</pre>"
+Set ttt =IE3.Document.QuerySelectorAll("[style='width: 80%; text-align: left;']")
+BtMsg = ttt.item(1).innerText + vbcrlf
+
+EE020 = IE3.Document.getElementById("ReportTable_020").innertext
+EE521 = Mid(IE3.Document.getElementById("ReportTable_521").innertext,2,9)
+EE522 = Mid(IE3.Document.getElementById("ReportTable_522").innertext,2,9)
+EE710 = Mid(IE3.Document.getElementById("ReportTable_710").innertext,2,13)
+EE710Url = "<a href = 'http://3gtas.vscc.org.tw/VSTD/CaseSearchContent?CaseID=" & Left(EE710,9) & "&mgvi_code=710' target='_blank'> "
+EE390 = Mid(IE3.Document.getElementById("ReportTable_390").innertext,2,13)
+LED =   EE521 & EE522 
+
+If EE020 = "" Then                 '020判斷
+Lu020 = "娛樂性=False"
+Else
+Lu020 = "娛樂性=True"
+End If
+
+Select Case LED                    'Led判斷
+Case "A108CCAVN"
+LuLed = "LED=True"
+Case "A107CCG2U"
+LuLed = "LED=True"
+Case "A108CCB61"
+LuLed = "LED=True"
+Case "A108CCAOU"
+LuLed = "LED=True"  
+Case "A108CCBPV"
+LuLed = "LED=True"  
+Case "A108CCCCA"
+LuLed = "LED=True"  
+Case "A108CCBPV"
+LuLed = "LED=True"  
+Case "A106CCARW"
+LuLed = "LED=True"  
+Case "A106CCBJN"  
+LuLed = "LED=True"
+
+Case "A108CCB5U"
+LuLed = "LED=False"
+Case "A106CCD2O"
+LuLed = "LED=False"
+Case "A104CCBG8"
+LuLed = "LED=False"
+Case "A110CCDYN"
+LuLed = "LED=False"
+Case "A108CCG3P"
+LuLed = "LED=False"
+Case "A108CCB5U"
+LuLed = "LED=False"
+Case "A108CCGP7"
+LuLed = "LED=False"
+Case "A106CCA5A"
+LuLed = "LED=False"
+Case "A110CCBO6"
+LuLed = "LED=False"
+Case "A101CCA2E"
+LuLed = "LED=False"
+Case "A107CC507"
+LuLed = "LED=False"
+Case "A107CCGS1"
+LuLed = "LED=False"
+Case "A109CC502"
+LuLed = "LED=False"
+Case "A106CCBJI"
+LuLed = "LED=False"
+Case "A106CCBPR"
+LuLed = "LED=False"
+Case "A109CC502"
+LuLed = "LED=False"
+Case "A107CC295"
+LuLed = "LED=False"
+Case "A96CCANP-"
+LuLed = "LED=False"
+Case "A99CCAGB-"
+LuLed = "LED=False"
+Case "A96CCAW3-"
+LuLed = "LED=False"
+Case "A100CCBL3"
+LuLed = "LED=False"
+
+Case "A110CCFSN"
+LuLed = "LED=False"
+
+Case Else
+LuLed = LED & "LED=??"
+End Select
+
+Set ttt =IE3.Document.QuerySelectorAll("[style='width: 80%; text-align: left;']")
+BtMsg = ttt.item(1).innerText
+Dim s, numbers, i
+numbers = GetNumbersBeforeCm(BtMsg)
+mgb1 = "底盤適用寬度" & "[" & fat & "CM]--------OK" + vbcrlf
+For i = 0 To UBound(numbers) 
+    If fat-numbers(i) >0 Then
+    ErrorText = ErrorText + "超底盤適用寬度 "
+    mgb1 = "底盤適用寬度" & "[" & fat & "CM]--------NG" + vbcrlf
+    mgb2 = "完成車寬度超出底盤適用寬度需安裝側方向燈(方向燈授權)及上傳適用車寬維護資料"
+    End If
+    BtfatUse = BtfatUse & numbers(i) & "、"
+Next
+line = Split(BtMsg,vbCrLf)
+line3 = line(3) + vbcrlf
+line4 = line(4) + vbcrlf
+
+Sub BigText(msg0001)                                                                                                '如果有大樑變更叫出比對資料
+ IE5.Navigate "about:blank"
+  While IE3.ReadyState <> 4 : WScript.Sleep 100 : Wend
+  IE5.ToolBar   = False
+  IE5.StatusBar = True
+  IE5.Width     = 1400
+  IE5.Height    = 500
+  IE5.document.body.innerHTML = "<p class='msg0000'> <pre style = 'font-family:times new roman;font-weight:bold; font-size: 20px;'>" & msg0001 & "</pre></p>"
+  IE5.Visible = True
+End Sub
+                                                                                                 '完成車照片
+If(high>350) Then
+ ErrorText = ErrorText + "確認080"
+ Else msg080 ="車輛全高[" & high & "]未逾350CM"  + vbcrlf
+End If
+msgBTFA ="底盤車型式系列：" & BtFA + vbcrlf
+mg20 = "核對完成車照片(7/12)" + vbcrlf
+mg205= "審視照片前後左右清楚無遮擋" + vbcrlf
+mg21 = CarBody & "、" & Btf & "、" & Axle + vbcrlf
+mg22 = "聯結器確認：[" & Con & "]" & + vbcrlf
+mg24 = "檢查備胎：[ " & Tir & "]" & + vbcrlf
+mg25 = "各項目資料比對" + vbcrlf
+mg26 = "頭燈&娛樂性備註：" & Lu020 & " / " & LuLED + vbcrlf
+mg27 = "070側方兩端有縱向連結，側後方與後方須連續" + vbcrlf
+If (lenth > 600) AND (lenth <=900) Then
+     mg28 = "單側一盞側方向燈、距車頭3M內至少一盞側方標誌燈" + vbcrlf
+Else If (lenth >900) Then
+    mg28 = "單側三盞側方向燈、距車頭3M內至少一盞側方標誌燈" + vbcrlf
+Else
+mg28 = "---免裝設側方向燈、側方標誌燈" + vbcrlf
+End If
+End If
+If (fat > 210) Then
+mg29 = "輪廓邊界標誌燈" & EE390 & + vbcrlf
+Else
+mg29 = "---免裝設輪廓邊界標誌燈"  & EE390 & + vbcrlf
+End If
+If (TotalWt>7.5 ) And ( TotalWt<50 )  Then
+  If (lenth > 600) Then
+    mg30 = "側方反光識別(白黃)" + vbcrlf
+  Else mg30 = "---免側方反光" + vbcrlf
+  End If
+   If (fat > 210) Then
+    mg31 = "後方反光識別(紅黃)，距煞車燈大於20CM"   + vbcrlf
+  Else mg31 = "---免後方反光"  + vbcrlf
+  End If
+Else
+mg30 = "---免符合反光識別材料" + vbcrlf
+End If
+mg32 = "後方向燈向外"  + vbcrlf
+mg33 = "後霧燈中間或駕駛側，須與煞車燈距10CM以上" + vbcrlf
+mg34 = "若車體廠無710審查報告，鏡頭安裝位置需與底盤車一致[" & EE710Url & EE710 & "] </a>"
+
+
+Sub Picture()
+ IE5.Navigate "about:blank"
+ IE5.ToolBar   = False
+ IE5.Width     = 1200
+ IE5.document.body.innerHTML = "<p class='msg0000'> <pre style = 'font-family:times new roman;font-weight:bold; font-size: 23px;'>" & msg0000 & "</pre></p>"      '對完成車照片輔助
+ IE5.Visible = True
+End Sub
+
+'-------------------------------------------------------------------------------------載重限制
+If(TotalWt=5000) Then
+ If (GoodsWt<=1500) Then
+ msgtxt55 ="載重低於1500KG 請確認載重聲明書!" & GoodsWt & + vbcrlf
+ ErrorText = ErrorText + "載重聲明書 "
+ Else msgtxt55 ="5噸貨車載重=" & GoodsWt & ">=1500KG----------載重確認 OK!" &  + vbcrlf
+End If
+End If
+
+'-----------------------------------------------------------------------------載重限制
+
+'----------------------------------------------------------------------------後懸限制
+If (sol12>=0) Then
+msgtxt33 ="軸距/2-後懸="& sol12 & ">=0 ----------------------後懸確認OK!" + vbcrlf
+Else msgtxt33 = sol12 &"後懸請確認" + vbcrlf
+ErrorText = ErrorText + "後懸 "
+End If
+'---------------------------------------------------------------------------後懸限制
+
+BtLenn = Left(BtLength,BtLengthKill)
+BtFatt = Left(BtFat,BtFatKill)
+BtHii = Left(BtHigh,BtHighKill)
+
+SolLenth = BtLenn-lenth
+SolFat = BtFatt-fat
+SolHigh = BtHii-high
+If (SolLenth<=0) And (SolFat<=0) And(SolHigh<=0) Then
+mgSol1 = "----尺度比對OK!"
+Else  
+mgSol1 = "----尺度比對NG!"
+ErrorText = ErrorText + "尺度比對NG! "
+End If
+AllSol = lenth-back-max-BtFmax1
+msgtxt11 = "全長-後懸-軸距-前懸= " & AllSol & "公分，需趨近於零" & mg3
+msgtxt115 = "完成車尺度須超過底盤車登錄值" & mgSol1+ vbcrlf
+mgggg = "底盤尺度" & "<" & "完成車尺度" + vbcrlf
+mgggg1 = "   全長：" & BtLenn & "<=" & lenth & " | " & BigT  + vbcrlf
+mgggg2 = "   全寬：" & BtFatt & "<=" & fat + vbcrlf
+mgggg3 = "   全高：" & BtHii & "<=" & high + vbcrlf
+mgVs = mgggg1+mgggg2+mgggg3
+If TotalWt>50 Then
+CCFW = FrontWt/1000
+CCBW = BackWt/1000
+Else
+CCFW = FrontWt
+CCBW = BackWt
+End If
+BtFHLen = Len(BtFH)-2
+BtBHLen = Len(BtBH)-2
+BtFHCCC = Left(BtFH,BtFHLen)
+BtBHCCC = Left(BtBH,BtBHLen)
+SolBtFHCCC = BtFHCCC-CCFW
+SolBtBHCCC = BtBHCCC-CCBW
+If (SolBtBHCCC<=0) And (SolBtFHCCC<=0) Then
+mgSol2 = "----重量比對OK!"
+Else  
+mgSol2 = "----重量比對NG!"
+ErrorText = ErrorText + "重量比對NG! "
+End If
+
+If ( FrontWt*1000 + BackWt*1000 = CarGWt*1000) And (TotalWt*1000-FrontWt*1000-BackWt*1000 = GdWt*1000) Then
+mgSol3 = "----計算比對OK!"
+Else  
+mgSol3 = "----計算比對NG!"
+ErrorText = ErrorText + FrontWt*1000 + BackWt*1000 & CarGWt*1000 & GdWt*1000 &"計算比對NG! "
+End If
+
+msgtxt125 = "完成車重量須超過底盤車設計值" & mgSol2 + vbcrlf
+msgtxt126 = "   前空重：" & BtFH & "< " & FrontWt + vbcrlf
+msgtxt127 = "   後空重：" & BtBH & "< " & BackWt + vbcrlf
+msgtxt22 ="空重+載重=總重:" & NetWt &"+"& GoodsWt &"=" & TotalWtSol & mgSol3 + vbcrlf
+m5122 = "宣告空重：[" & CarGWt & "]" + vbcrlf
+m5123 = "宣告載重：[" & GdWt & "]" + vbcrlf
+msgtxt66= msgtxt11 +msgtxt115+mgVs+msgtxt125+msgtxt126+msgtxt127+ msgtxt33 + msgtxt44  + msgtxt55 + msgtxt22  + m5122 + m5123 
+mg= msgtxt77 &"核對底盤規格表各項數據(8/12)" & + vbcrlf
+
+mgT = "輪胎規格核對並於初審輸入輪胎荷重，複製底盤車案號[" & BtNom & "](10/12)" + vbcrlf
+mgFTire = BtFTire & "前輪數：[" & FtireN & "]|" & "前輪胎規格：[" &  Ftire & "]" + vbcrlf 
+mgBTire = BtBTire & "後輪數：[" & BtireN & "]|" & "後輪胎規格：[" &  Btire & "]" + vbcrlf
+
+mgbb0 = "底盤車案號[" & BtNom & "]" + vbcrlf
+
+mgb2 = ""
+mgb3 = "再次檢查產出物(12/12)" + vbcrlf
+mgb4 = "合格證備註確認" + vbcrlf
+
+mgSitA = msgSitt & "宣告座位數：[" & Sit & "]"
+
+If strValue1 - Sit = 0 Then
+SitCheck = "----座位數比對OK" + vbcrlf
+Else 
+SitCheck = "----座位數比對NG" + vbcrlf
+ErrorText = ErrorText + "座位數比對NG"
+End If
+
+If  BtCCTireF > 0 And BtCCTireB > 0 Then
+mgTireCheck = "--------輪胎規格比對OK" + vbcrlf
+Else 
+mgTireCheck = "--------輪胎規格比對NG" + vbcrlf
+ErrorText = ErrorText + "輪胎規格比對NG"
+End If
+
+msgAllTime= msgAllTime + ErrorText  + vbcrlf
+
+IE3.Quit
+' --------------------------------------------------------------------------------------控制頁面
+
+
+' 創建四個按鈕元素，並將其添加到右區域 DIV 元素中
+Set objButton0 = objDoc.createElement("button")
+objButton0.innerHTML = "申請者資格登錄"
+objButton0.style.cssText = "display:block; margin-bottom:1px;"
+objRightDiv.appendChild objButton0
+
+Set objButton1 = objDoc.createElement("button")
+objButton1.innerHTML = "控管表"
+objButton1.style.cssText = "display:block; margin-bottom:1px;"
+objRightDiv.appendChild objButton1
+
+Set objButton2 = objDoc.createElement("button")
+objButton2.innerHTML = "下載附件"
+objButton2.style.cssText = "display:block; margin-bottom:1px;"
+objRightDiv.appendChild objButton2
+
+Set objButton3 = objDoc.createElement("button")
+objButton3.innerHTML = "核對大樑變更"
+objButton3.style.cssText = "display:block; margin-bottom:1px;"
+objRightDiv.appendChild objButton3
+
+Set objButton4 = objDoc.createElement("button")
+objButton4.innerHTML = "九宮格"
+objButton4.style.cssText = "display:block; margin-bottom:1px;"
+objRightDiv.appendChild objButton4
+
+Set objButton5 = objDoc.createElement("button")
+objButton5.innerHTML = "多量符合性宣告表"
+objButton5.style.cssText = "display:block; margin-bottom:1px;"
+objRightDiv.appendChild objButton5
+
+Set objButton6 = objDoc.createElement("button")
+objButton6.innerHTML = "勾選備註、核定有效日期"
+objButton6.style.cssText = "display:block; margin-bottom:1px;"
+objRightDiv.appendChild objButton6
+
+Set objButton7 = objDoc.createElement("button")
+objButton7.innerHTML = "合格證預覽"
+objButton7.style.cssText = "display:block; margin-bottom:1px;"
+objRightDiv.appendChild objButton7
+
+Set objButton8 = objDoc.createElement("button")
+objButton8.innerHTML = "底盤車庫存比對、號碼位置、費用確認"
+objButton8.style.cssText = "display:block; margin-bottom:1px;"
+objRightDiv.appendChild objButton8
+
+Set objButton9 = objDoc.createElement("button")
+objButton9.innerHTML = "核對多量合格證"
+objButton9.style.cssText = "display:block; margin-bottom:1px;"
+objRightDiv.appendChild objButton9
+
+Set objButton10 = objDoc.createElement("button")
+objButton10.innerHTML = "核對完成車照片"
+objButton10.style.cssText = "display:block; margin-bottom:1px;"
+objRightDiv.appendChild objButton10
+
+Set objButton11 = objDoc.createElement("button")
+objButton11.innerHTML = "核對底盤規格表"
+objButton11.style.cssText = "display:block; margin-bottom:1px;"
+objRightDiv.appendChild objButton11
+
+
+
+
+
+Set objButton14 = objDoc.createElement("button")
+objButton14.innerHTML = "再次檢查產出物"
+objButton14.style.cssText = "display:block; margin-bottom:1px;"
+objRightDiv.appendChild objButton14
+
+Set objButton15 = objDoc.createElement("button")
+objButton15.innerHTML = "下載底盤車圖"
+objButton15.style.cssText = "display:block; margin-bottom:1px;"
+objRightDiv.appendChild objButton15
+
+Set objButton16 = objDoc.createElement("button")
+objButton16.innerHTML = "關閉"
+objButton16.style.cssText = "display:block; margin-bottom:1px;"
+objRightDiv.appendChild objButton16
+
+objButton0.onclick = GetRef("Button0_Click")
+objButton1.onclick = GetRef("Button1_Click")
+objButton2.onclick = GetRef("Button2_Click")
+objButton3.onclick = GetRef("Button13_Click")
+objButton4.onclick = GetRef("Button3_Click")
+objButton5.onclick = GetRef("Button5_Click")
+objButton6.onclick = GetRef("Button6_Click")
+objButton7.onclick = GetRef("Button4_Click")
+objButton8.onclick = GetRef("Button7_Click")
+objButton9.onclick = GetRef("Button8_Click")
+objButton10.onclick = GetRef("Button9_Click")
+objButton11.onclick = GetRef("Button10_Click")
+
+
+objButton14.onclick = GetRef("Button14_Click")
+objButton15.onclick = GetRef("Button15_Click")
+objButton16.onclick = GetRef("Button16_Click")
+
+' 設置按鈕的 Click 事件處理程序
+
+' 等待用戶關閉 IE 窗口
+
+Do While IE4.Visible
+    WScript.Sleep 100
+Loop
+
+' 釋放對象
+Set objButtons = Nothing
+Set objDoc = Nothing
+Set IE4 = Nothing
+
+Sub Button0_Click()
+   objLeftDiv.InnerHTML = Html
+End Sub
+
+Sub Button1_Click()
+   objLeftDiv.InnerHTML ="<pre>" & msgAllTime & mg06 +mgCopy + mg14+ mg17 & "</pre>"  '--------------------(案件登陸審驗案件控管表1/12)
+End Sub
+
+Sub Button2_Click()
+Call Download()   '下載復健
+End Sub
+
+Sub Button3_Click()
+Call NiNht()       '九宮格
+End Sub
+
+Sub Button4_Click()
+ IE1.Navigate Url2,CLng(navOpenInNewTab)                                                                                     '開啟合格證預覽
+End Sub
+
+Sub Button5_Click()
+IE1.Navigate Url9,CLng(navOpenInNewTab)                                     '開啟多量符合性宣告表
+objLeftDiv.InnerHTML ="<pre>" & BB031 &BB032 &BB033 &BB034 & mg06 & BB070 & mg06 & BB080 & mg06 & BB110 & BB111 &mg06& BB201 & BB202 &mg06& BB390 &mg06& BB401 &mg06 & BB610&mg06& BB710&mg06 & "</pre>"
+End Sub
+
+Sub Button6_Click()
+Call FifTonCheck()  '勾選備註
+Call BigChange()   
+objLeftDiv.InnerHTML ="<pre>" & msgAllTime & mg06+mg0+MgDay+mgBtDay+mg4+mgTieF+mgTieB+mg2+mg22+mg3+mg1 & "</pre>" '------------------------------勾選備註、核定有效日期，在存檔後按確定(2/12)
+End Sub
+Sub Button7_Click()
+IE1.Navigate Url7,CLng(navOpenInNewTab)                                                                         '底盤車庫存比對
+IE1.Navigate Url4,CLng(navOpenInNewTab)                                                                         '號碼位置
+IE1.Navigate Url5,CLng(navOpenInNewTab)                                                                         '費用確認
+objLeftDiv.InnerHTML ="<pre>" & msgAllTime & mg06+mg12+mg11 & "</pre>" '-----------------------------------------------------------------完成庫存車比對、底盤車庫存比對、號碼位置、費用確認3
+
+End Sub
+Sub Button8_Click()
+IE1.Document.QuerySelector("a[href*='../NMQVerify/CertificationReport_ViewPDF?CaseID=']").Click                                  '多量合格證
+objLeftDiv.InnerHTML ="<pre>" & msgAllTime & mg06 + msg080 + mg3 + msgBTFA +  "核對多量合格證上半部條件(6/12)" & "</pre>"
+End Sub
+
+Sub Button9_Click()
+Call Picture()       '核對完成車照片 
+objLeftDiv.InnerHTML ="<pre>" & msgAllTime & mg06 +mg20+ mg06+mg205+mg21+mg22+mg3+mg24+ mg06+mg25+mg26+mg27+ mg06+mg28+mg29+mg30+mg31+mg06+mg32+mg33+mg06+mg34 & "</pre>"
+End Sub
+
+
+Sub Button10_Click()
+objLeftDiv.InnerHTML ="<pre>" & msgAllTime & mg06 +mg + msgtxt66  & mgSitA & SitCheck & mgTieF & mgTieB & mgTireCheck & "</pre>" '----------------------------核對底盤規格表各項數據(8/12)
+End Sub
+
+Sub Button13_Click()
+objLeftDiv.InnerHTML ="<pre>" & msgAllTime & mg06 + mgBA & mg1 & "核對大樑變更資料(5/12)" & "</pre>"
+BigText(msg0001)    '核對大樑變更
+End Sub
+' --------------------------------------------------------------------------------------控制頁面
+Function GetNumbersBeforeCm(s)
+    Dim regex, matches, match, results
+    Set regex = New RegExp
+    regex.Pattern = "(\d+(?:\.\d+)?)\s*公分"
+    regex.IgnoreCase = True
+    regex.Global = True
+    Set matches = regex.Execute(s)
+    Set results = CreateObject("Scripting.Dictionary")
+    For Each match In matches
+        results.Add results.Count, CDbl(match.SubMatches(0))
+    Next
+    GetNumbersBeforeCm = results.Items
+End Function
+
+Function Button14_Click()                             '再次核對產出物
+
+objLeftDiv.InnerHTML ="<pre>" & msgAllTime & mg06 +line3+line4 + mg06 + mgb1+mgb2+mgb3+mg205+mg21+mg22+mg23+mg3+mg24+mg25+mg26+mgb4+mg1+mg2+mg06+MgDay+mg0+mgBtDay+BB110+BB111 & "</pre>"
+End Function
+
+Sub Button15_Click()
+IE4.Navigate(BtPictureUrl)
+End Sub
+
+Sub Button16_Click()
+
+Close = Shell.Popup("關閉程式?",0,"關閉",1)
+
+If Close = "1" Then
+On Error Resume Next
+IE2.Quit
+IE3.Quit
+IE4.Quit
+IE5.Quit
+objExcel.Quit
+WScript.Quit
+IE1 = Nothing
+IE2 = Nothing
+IE3 = Nothing
+IE4 = Nothing
+IE5 = Nothing
+excel = Nothing
+objexcel = Nothing
+Shell = Nothing
+End If
+End Sub
+
+
+
+End If
